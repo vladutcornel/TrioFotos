@@ -1,5 +1,6 @@
 <?php
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * A generic SGML (XML or HTML) element
@@ -7,7 +8,7 @@ require_once TRIO_DIR.'/whereis.php';
  * @package 3oLibrary
  * @subpackage HTML
  */
-class Element extends TObject
+class Element extends \TObject
 {
     /**
      * @var string The tag name
@@ -35,7 +36,7 @@ class Element extends TObject
     private $htmlId;
 
     /**
-     * @staticvar array A list with all ids used by the page
+     * @staticvar array A list with all ids used by the page (so there won't be duplicates)
      */
     private static $usedIds = array();
 
@@ -49,6 +50,12 @@ class Element extends TObject
      * @see Element::eachChild()
      */
     private $position = 0;
+    
+    /**
+     * Weather or not the element should be displayed
+     * @var boolean
+     */
+    private $displayable = true;
 
     /**
      * @param string $tagName The name of the element (e.g. "div" for <div>)
@@ -62,8 +69,10 @@ class Element extends TObject
     }
 
     /**
+     * Mark this element as single so no children will be displayed and 
+     * the format will be <tag_name />
      * @param boolean $single
-     * @return Element $this
+     * @return Element $this for method chaining
      */
     public function setSingleTag($single)
     {
@@ -73,6 +82,7 @@ class Element extends TObject
     }
 
     /**
+     * Check if this element won't display children
      * @return bool
      */
     public function isSingletag()
@@ -88,33 +98,34 @@ class Element extends TObject
     public function setId($newid)
     {
         // if there is no ID, create one from the tag
-        if ('' == trim($newid)) $newid = $this->getTag ();
+        if ('' == \trim($newid)) $newid = $this->getTag ();
         
         // if the tag was not set, generate one random ID
-        if ('' == trim($newid)) $newid = md5(time());
+        if ('' == \trim($newid)) $newid = \md5(\rand());
         
-        // make sore it's a unique id
+        // make sure it's a unique id
         $element_nr = 1;
         $id = $newid;
-        while (in_array($id, self::$usedIds))
+        while (\in_array($id, self::$usedIds))
         {
             $id = $newid . $element_nr;
             $element_nr ++;
         }
 
         // remove old id from the list
-        if (false !== ($position = array_search($this->htmlId, self::$usedIds)))
+        if (false !== ($position = \array_search($this->htmlId, self::$usedIds)))
         {
-            unset(self::$usedIds[$position]);
+            // modify in place
+            self::$usedIds[$position] = $id;
+        }else {
+            // append the new id
+            self::$usedIds[] = $id;
         }
-
-        // in with the new
-        self::$usedIds[] = $id;
 
         // save the id
         $this->htmlId = $id;
 
-        // update the element atributes
+        // update the element attributes
         $this->setAttribute('id', $this->getId());
 
 
@@ -122,6 +133,7 @@ class Element extends TObject
     }
 
     /**
+     * Get the element identifier (ID element)
      * @return string
      */
     public function getId()
@@ -145,10 +157,11 @@ class Element extends TObject
      */
     public function setTag($newname)
     {
-        $newname = trim($newname);
-        if (!preg_match("/^[a-z][a-z1-6]*$/i", $newname))
+        $newname = \trim($newname);
+        // cherck if it's a valid XML tag name
+        if (!\preg_match("/^[a-z_][a-z0-9\:_\-\.]*$/i", $newname))
         {
-            throw new Exception("Invalid tag name");
+            throw new \DomainException("Invalid tag name");
         }
         $this->tag = $newname;
         return $this;
@@ -173,12 +186,12 @@ class Element extends TObject
      */
     public function setAttribute($attrName, $attrValue)
     {
-        $attrName = trim($attrName);
-        if (!preg_match("/^[a-z\-]*$/i", $attrName))
+        $attrName = \trim($attrName);
+        if (!\preg_match("/^[a-z_][a-z0-9\:_\-\.]*$/i", $attrName))
         {
-            throw new Exception("Invalid attribute name");
+            throw new \DomainException("Invalid attribute name");
         }
-        $this->attributes[$attrName] = "{$attrValue}";
+        $this->attributes[$attrName] = $attrValue;
         return $this;
     }
     
@@ -200,6 +213,7 @@ class Element extends TObject
      * Alias of Element::deleteAttribute
      * @param string $attrName
      * @return Element $this
+     * @see Element::deleteAttribute
      */
     public function removeAttribute($attrName)
     {
@@ -207,7 +221,7 @@ class Element extends TObject
     }
 
     /**
-     * Set the inner text of the element. This can contain simple HTML code too
+     * Set the inner text of the element. This can contain markup code too
      * @param string $newText the new inner text
      * @return Element $this
      */
@@ -223,7 +237,43 @@ class Element extends TObject
      */
     public function getText()
     {
-        return $text;
+        return $this->text;
+    }
+    
+    /**
+     * Tells wether or not this element can be displayed
+     * @return boolean
+     */
+    public function canDisplay()
+    {
+        return $this->displayable;
+    }
+    
+    /**
+     * Set the displayable flag
+     * @param boolean $state
+     * @return Element $this for method chaining
+     */
+    public function setDisplayable($state)
+    {
+        $this->displayable = $state?true:false;
+        return $this;
+    }
+    
+    /**
+     * Set the displayable flag to true
+     * @return \Element $this for method chaining
+     */
+    public function show(){
+        return $this->setDisplayable(true);
+    }
+    
+    /**
+     * Set the displayable flag to false
+     * @return \Element $this for method chaining
+     */
+    public function hide(){
+        return $this->setDisplayable(false);
     }
 
     /**
@@ -242,7 +292,7 @@ class Element extends TObject
                 'element' => $child,
                 'before' => $before // before internal text?
                 );
-            $nrChilds = count($this->childs);
+            $nrChilds = \count($this->childs);
             if ($position == - 1 || $position >= $nrChilds)
             {
                 // the inserted position is the end of the array
@@ -279,17 +329,18 @@ class Element extends TObject
             return $this;
         }
         
-        throw new BadMethodCallException('The parent of an element must also be an element');
+        throw new \BadMethodCallException('The parent of an element must also be an element');
     }
 
     /**
-     * Retrives the Child information (index position, Element object and possition relative to the text - before = true/false)
+     * Retrives the Child information (index position, Element object and 
+     * possition relative to the text - before = true/false)
      * @param string $id the element's ID
-     * @return string An associative array( 'position'=>int, 'before'=>bool, 'element'=>Element ) or NULL if there is no child
+     * @return array|null An associative array( 'position'=>int, 'before'=>bool, 'element'=>Element ) or NULL if there is no child
      */
     public function getChildById($id){
         $elements = $this->childs;
-        foreach ($elements as $position => $lement){
+        foreach ($elements as $element){
             if ($element['element']->getId() == $id){
                 return $element;
             }
@@ -299,13 +350,14 @@ class Element extends TObject
     }
 
     /**
-     * Retrives the Child information (index position, Element object and possition relative to the text - before = true/false) based on the element type/tag
+     * Retrives the Child information (index position, Element object and 
+     * possition relative to the text - before = true/false) based on the element type/tag
      * @param string $tag the element's type name
-     * @return string An associative array( 'position'=>int, 'before'=>bool, 'element'=>Element ) or NULL if there is no child
+     * @return array|null An associative array( 'position'=>int, 'before'=>bool, 'element'=>Element ) or NULL if there is no child
      */
     public function getFirstOf($tag){
         $elements = $this->childs;
-        foreach ($elements as $position => $lement){
+        foreach ($elements as $element){
             if ($element['element']->getTag() == $tag){
                 return $element;
             }
@@ -315,25 +367,33 @@ class Element extends TObject
     }
 
     /**
-     * Retrives the next Child information, based on an internal pointer. After the list child, NULL is returned and the pointer repositions on the first element
+     * Retrives the next Child information, based on an internal pointer. 
+     * After the list child, NULL is returned and the pointer repositions on 
+     * the first element
      * @param string $tag the element's type name
-     * @return string|null An associative array( 'position'=>int, 'before'=>bool, 'element'=>Element ) or NULL if there is no child
+     * @return array|null An associative array( 'position'=>int, 'before'=>bool, 'element'=>Element ) or NULL if there is no child
      */
     public function eachChild(){
-        if ($this->isSingletag() || count($this->childs) < 1)
+        if ($this->isSingletag() || \count($this->childs) < 1)
             return null;
-        if ($this->position == count ($this->childs) ){
+        if ($this->position == \count ($this->childs) ){
             $this->position = 0;
             return NULL;
         }
         return $this->childs[ $this->position++ ];
     }
     
+    /**
+     * Retrieves all known children of this element.
+     * If it's a single tag, no element will be returned no mater if any child 
+     * was added
+     * @return array
+     */
     public function getChildren()
     {
         $children = array();
         
-        if ($this->isSingletag() || count($this->childs) < 1)
+        if ($this->isSingletag() || \count($this->childs) < 1)
             return $children;
         
         while(($child = $this->eachChild()) != NULL)
@@ -348,10 +408,12 @@ class Element extends TObject
     /**
      * Display or fetch the Element's code
      * @param bool $echo Display and fetch(true) or just fetch(false)
-     * @return string the code for this element, including
+     * @return string the code for this element, including child nodes
      */
     public function toCode($echo = true)
     {
+        if (! $this->canDisplay())
+            return '';
         /*Register start-tag attributes*/
         $tag = $this->startTag(false);
         if ($this->isSingletag()){
@@ -361,20 +423,22 @@ class Element extends TObject
         }
         // print a closing-tag element
         /* Register child elements */
-        $htmlBefore = "";
-        $htmlAfter = "";
+        $htmlBefore = '';
+        $htmlAfter = '';
         $nrChilds = count($this->childs);
         for($i = 0; $i < $nrChilds; $i++)
         {
+            // skip non-elements
+            if (!$this->childs[$i]['element'] instanceof Element)
+                continue;
+            // get the code before and after the text
             if ($this->childs[$i]['before'])
             {
                 $htmlBefore .= $this->childs[$i]['element']->toCode(false);
-                //$htmlBefore .= "\n";
             }
             else
             {
                 $htmlAfter .= $this->childs[$i]['element']->toCode(false);
-                //$htmlAfter .= "\n";
             }
         }
         /* Echo if necessary */
@@ -386,16 +450,16 @@ class Element extends TObject
     }
 
     /**
-     * fetch or display only the start tag of the element
+     * Fetch or display only the start tag of the element
      * @param boolean $echo true if you want to print the tag
-     * @return
+     * @return string the start tag code
      */
     public function startTag($echo = true){
         /*Register start-tag attributes*/
         $tag = $this->tag;
         foreach($this->attributes as $attr => $value)
         {
-            $tag .= " $attr=\"" . htmlentities($value) . "\"";
+            $tag .= " $attr=\"" . htmlentities("$value") . "\"";
         }
         // print a single tag
         if ($this->isSingletag())
@@ -416,9 +480,10 @@ class Element extends TObject
     }
 
     /**
-     * Fetch or display the element's enting tag. if this is a single-tag element, an empty string will be returned
+     * Fetch or display the element's ending tag. 
+     * If this is a single-tag element, an empty string will be returned
      * @param boolean $echo true if the tag should be printed
-     * @return string
+     * @return string seomething like "</tag_name>"
      */
     public function endTag($echo = true){
         if ($this->isSingletag()) return "";

@@ -1,29 +1,30 @@
 <?php
-require_once TRIO_DIR.'/whereis.php';
+
+require_once TRIO_DIR.'/framework-core.php';
 /**
  * The basic library. implements the methods that should be loaded by any other 
  * classes
  * Pus some data that should be available anywhere
  * @author Cornel Borina <cornel@scoalaweb.com>
- * @package 3oLibrary
+ * @package 3oFramework
+ * @subpackage Core
  */
 class TObject{
+    
     /**
-     * Method that should be present in all class files
+     * Map of accessed proiperties
+     * Used to store data accessed from outside (that triggered magic methods), 
+     * without accidentally accessiong protected methods.
+     * @var array
      */
-    public function main()
-    {
-        // if there is not Main method implemented, it's probably a library class
-        echo "This file is not for view";
-    }
-
+    private $_prop = array();
+    
     /**
-     * Convert the current element to a HTML code. This should be allways 
-     * overridden
-     * @return string The HTML representation of the current object
+     * Convert the current element to a text. 
+     * @return string The string representation of the current object
      */
-    public function toHtml(){
-        return __CLASS__;
+    public function __toString() {
+        return get_called_class();
     }
 
     /**
@@ -33,20 +34,20 @@ class TObject{
      */
     public function getVar($var_name){
         $var_name = strtolower($var_name);
-        if(isset($this->$var_name))
-            return $this->$var_name;
-        return FALSE;
+        if(isset($this->_prop[$var_name]))
+            return $this->_prop[$var_name];
+        return NULL;
     }
 
     /**
      * General setter
      * @param string $var_name
      * @param mixed $new_value
-     * @return \TObject for method chaining (if wanted)
+     * @return \TObject $this for method chaining
      */
     public function setVar($var_name, $new_value){
         $var_name = strtolower($var_name);
-        $this->$var_name = $new_value;
+        $this->_prop[$var_name] = $new_value;
         return $this;
     }
 
@@ -59,26 +60,22 @@ class TObject{
      */
     public function __call($function, $args)
     {
-        // test a getter
-        $is_getter = preg_match("/^get(?P<varname>[a-z_]+)$/i",$function, $matches);
-        if ($is_getter){
-            return $this->getVar(strtolower($matches['varname']));
-        }
-
-        // test a boolean getter
-        $is_boolean_getter = preg_match("/^is(?P<varname>[a-z_]+)$/i",$function, $matches);
-        if ($is_boolean_getter){
-            return $this->getVar(strtolower($matches['varname']))?true:false;
-        }
-
-        // test a setter
-        $is_setter = preg_match("/^set(?P<varname>[a-z_]+)$/i",$function, $matches);
-        if ($is_setter){
-            return $this->setVar(strtolower($matches['varname']), $args[0]);
+        // test a getter (get...), boolean getter (is...) or setter (set...)
+        $is_func = preg_match("/^(?P<functype>get|is|set)(?P<varname>[a-z_]+)$/i",$function, $matches);
+        if ($is_func){
+            switch($matches['functype']){
+                case 'get':
+                    return $this->getVar(strtolower($matches['varname']));
+                case 'is':
+                    return $this->getVar(strtolower($matches['varname']))?true:false;
+                case 'set':
+                    return $this->setVar(strtolower($matches['varname']), $args[0]);
+            }
+            
         }
 
         // Nothing worked. May be a misspell...
-        throw new BadMethodCallException;
+        throw new BadMethodCallException($function.' method is not implemented');
     }
 
     /**
@@ -104,12 +101,12 @@ class TObject{
         }
 
         // last chance: if the property was set, return the value
-        if (isset($this->$name))
+        if (isset($this->_prop[$name]))
         {
-            return $this->$name;
+            return $this->_prop[$name];
         }
 
-        throw new LogicException;
+        throw new LogicException($name.' was not set and does nott have a getter defined');
     }
 
     /**
@@ -136,12 +133,41 @@ class TObject{
         }
 
         // if the property doesn't exist, create one and give it the value
-        if (!isset($this->$name))
+        if (!isset($this->_prop[$name]))
         {
-            $this->$name = $value;
+            $this->_prop[$name] = $value;
             return;// so we won't throw the exception
         }
 
         throw new LogicException;
+    }
+    
+    public function __isset($name) {
+        return isset($this->_prop[$name]);
+    }
+
+        /**
+     * No Operation. 
+     * This can be used to take advantage of the whereis mechanism and load
+     * classes without actually using them just yet.
+     * You probably shouldn't abuse this feature.
+     * 
+     * This can be usefull if a file contains more than one class and you only 
+     * need the one that is not registered with Whereis
+     */
+    public static function noop(){}
+    
+    /**
+     * Create a new object of the current class and return it. Parameters can be 
+     * passed to the constructor.
+     * This only exists because constructions like "(new class)->method()" 
+     * (new object dereference) are illegal before PHP 5.4.
+     * 
+     * @deprecated since version PHP 5.4
+     */
+    public static function create(){
+        $class = new ReflectionClass(get_called_class());
+        return $class->newInstanceArgs(func_get_args());
+        
     }
 }

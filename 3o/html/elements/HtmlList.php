@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * Utility for manipulating HTML lists

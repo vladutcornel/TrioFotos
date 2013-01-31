@@ -1,0 +1,37 @@
+#main-image{
+    margin: 3px;
+    width: 100%;
+    height: auto;
+}
+#similars{
+    .photo{
+        display: inline-block;
+        position:relative;
+        float: left;
+        width: 209px;
+        margin: 3px;
+        img{
+            border-radius: 4px;
+            opacity: 0.9;
+            width: 209px;
+        }
+        .photo-actions{
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            display: none;
+        }
+        &:hover {
+           .photo-actions{
+                display: block;
+            }
+            img{
+                opacity: 1;
+            }
+        }
+    }
+}
+
+#infscr-loading{
+    display: none !important;
+}

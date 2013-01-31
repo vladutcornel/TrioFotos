@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * An Form ready for uploading files
@@ -19,8 +20,8 @@ class UploadForm extends Form{
 
     public static function getSystemMaxFileSize() {
         // based on http://hu2.php.net/manual/en/function.ini-get.php
-        $val = trim(ini_get("upload_max_filesize"));
-        $last = strtolower($val[strlen($val)-1]);
+        $val = \trim(\ini_get("upload_max_filesize"));
+        $last = \strtolower($val[\strlen($val)-1]);
         switch($last) {
             case 'g':
                 $val *= 1024;

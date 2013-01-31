@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 define('BUTTON_SUBMIT', 'submit');
 define('BUTTON_STANDARD', 'button');
@@ -10,7 +11,6 @@ define('BUTTON_STANDARD', 'button');
  * @author Cornel Borina <cornel@scoalaweb.com>
  * @package 3oLibrary
  * @subpackage HTML
- * @todo When complex content is added (like images), transform this into < button >
  */
 class Button extends Input{
     

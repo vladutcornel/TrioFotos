@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * An element designed to be included in a form
@@ -39,7 +40,7 @@ class FormElement extends HtmlElement{
     
     protected function guess_value(){
         // find the array basename
-        $has_base = preg_match('/^\s*(?P<var_base>[^\[]+)/i', $this->getName(),$matches);
+        $has_base = \preg_match('/^\s*(?P<var_base>[^\[]+)/i', $this->getName(),$matches);
         if (! $has_base || !isset($matches['var_base']))
         {
             return;
@@ -53,8 +54,8 @@ class FormElement extends HtmlElement{
         }
         
         // find sub-arrays in the name
-        $has_subarray = preg_match_all('/\[(?P<index>[^\]]*)\]/i', $this->getName(),$subarrays);
-        if (!$has_subarray || !isset($subarrays['index']) || count ($subarrays['index']) < 1)
+        $has_subarray = \preg_match_all('/\[(?P<index>[^\]]*)\]/i', $this->getName(),$subarrays);
+        if (!$has_subarray || !isset($subarrays['index']) || \count ($subarrays['index']) < 1)
         {
             // probably the name is just malformated
             return;
@@ -67,7 +68,7 @@ class FormElement extends HtmlElement{
                 // the last part is []
                 return;
             }
-            if (is_array($request[$index]))
+            if (\is_array($request[$index]))
             {
                 // move to the subarray
                 $request = $request[$index];
@@ -103,17 +104,17 @@ class FormElement extends HtmlElement{
     }
 
     public function setLabel($text){
-        if ($text instanceof FormLabel)
+        if ($text instanceof Label)
         {
             $this->label = $text;
             $this->external_label = true;
         }
-        if (!$this->label instanceof FormLabel)
+        if (!$this->label instanceof Label)
         {
             $this->create_label();
         }
         
-        if ($text instanceof HtmlElement && ! $text instanceof FormLabel) {
+        if ($text instanceof HtmlElement && ! $text instanceof Label) {
             $this->label->addChild($text);
         } else {
             $this->label->setText($text);
@@ -123,7 +124,7 @@ class FormElement extends HtmlElement{
     }
     
     private function create_label($text = ''){
-        $this->label = new FormLabel($text, $this);
+        $this->label = new Label($text, $this);
         $this->external_label = false;
     }
     

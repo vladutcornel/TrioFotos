@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * A page anchor
@@ -8,7 +9,7 @@ require_once TRIO_DIR.'/whereis.php';
  * @package 3oLibrary
  * @subpackage HTML
  */
-class Link extends HtmlInline{
+class Link extends HtmlElement{
 
     public function __construct($destination, $content = NULL, $id = ''){
         parent::__construct('a',$id);
@@ -24,5 +25,10 @@ class Link extends HtmlInline{
 
     public function getHref(){
         return $this->getAttribute('href');
+    }
+    
+    public function setHref($dest){
+        $this->setAttribute('href', $dest);
+        return $this;
     }
 }

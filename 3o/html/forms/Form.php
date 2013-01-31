@@ -1,6 +1,6 @@
 <?php
-
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * A HTML form element.
@@ -10,7 +10,7 @@ require_once TRIO_DIR.'/whereis.php';
  * @package 3oLibrary
  * @subpackage HTML
  */
-class Form extends HtmlBlock{
+class Form extends Block{
     private $form_fields = array();
     public function __construct($action, $method = 'get', $id=''){
         parent::__construct('form',$id);
@@ -66,8 +66,8 @@ class Form extends HtmlBlock{
     
     private static function find_form_elements(HtmlElement $e)
     {
-        $find_queue = new SplQueue();
-        $find_queue->setIteratorMode(SplDoublyLinkedList::IT_MODE_DELETE);
+        $find_queue = new \SplQueue();
+        $find_queue->setIteratorMode(\SplDoublyLinkedList::IT_MODE_DELETE);
         
         // the return array
         $elements = array();

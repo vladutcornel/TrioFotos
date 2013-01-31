@@ -1,6 +1,6 @@
 <?php
-
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\css;
+require_once \TRIO_DIR.'/whereis.php';
 
 /**
  * A CSS style sheet
@@ -10,7 +10,7 @@ require_once TRIO_DIR.'/whereis.php';
  * @todo Add support for & subclasses (like LESS)
  * @todo ADD support for CSSAtribute interface
  */
-class Style extends TObject{
+class Style extends \TObject{
 
     /**
      * @var string the CSS selector for this style
@@ -33,7 +33,7 @@ class Style extends TObject{
      */
     public function __construct($selector = NULL, $properties = NULL) {
         $this->selector = $selector;
-        if (is_array($properties)){
+        if (\is_array($properties)){
             $this->setMultipleProperties($properties);
         }
     }
@@ -49,12 +49,12 @@ class Style extends TObject{
         $style = '';
 
         // only print if there is something to print
-        if(count($this->properties))
+        if(\count($this->properties))
         {
             // prepare selector for this style
             if($use_selector){
                 // break selector into peaces
-                $selector_parts = explode(',', $this->getSelector());
+                $selector_parts = \explode(',', $this->getSelector());
 
                 // and add every peace to the selector
                 $hasComa = false;
@@ -130,7 +130,7 @@ class Style extends TObject{
         // determine setter name
         $setter = self::getPropertyMethod($property_name);
 
-        if (method_exists($this,$setter)){
+        if (\method_exists($this,$setter)){
             // use a specialised setter
             $this->$setter($property_value);
         }else {
@@ -147,7 +147,7 @@ class Style extends TObject{
      */
     public function getProperty($property_name) {
         $getter = self::getPropertyMethod($property_name,"get");
-        if (method_exists(this, $getter)){
+        if (\method_exists($this, $getter)){
             return $this->$getter();
         }
 
@@ -155,9 +155,9 @@ class Style extends TObject{
     }
 
     public static function getPropertyMethod($property_name, $prefix = "set"){//eg. margin left
-        $temp = str_replace("-"," ",$property_name); // e.g. "margin left"
-        $temp = ucwords($temp); // eg. "Margin Left"
-        return $prefix.str_replace(" ","",$temp);// eg. "setMarginLeft"
+        $temp = \str_replace("-"," ",$property_name); // e.g. "margin left"
+        $temp = \ucwords($temp); // eg. "Margin Left"
+        return $prefix.\str_replace(" ","",$temp);// eg. "setMarginLeft"
     }
 
     /**

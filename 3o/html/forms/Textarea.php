@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR.'/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * A multi-line text field (aka. textarea)
@@ -22,7 +23,7 @@ class Textarea extends FormElement{
     }
     
     public function setText($newText) {
-        return parent::setText(htmlentities($newText));
+        return parent::setText(\htmlentities($newText));
     }
     
     public function getText() {

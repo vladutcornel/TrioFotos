@@ -1,4 +1,8 @@
 <?php
+
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
+
 /**
  * A HTML Checkbox.
  *

@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR . '/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * A group of check boxes that are not necesary for direct display

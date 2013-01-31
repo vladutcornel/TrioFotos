@@ -1,4 +1,8 @@
 <?php
+
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
+
 /**
  * A HTML Toggleable field (checkbox/radio).
  *
@@ -20,7 +24,7 @@ class ToggleField extends Input{
     
     protected function guess_value(){
         // find the array basename
-        $has_base = preg_match('/^\s*(?P<var_base>[^\[]+)/i', $this->getName(),$matches);
+        $has_base = \preg_match('/^\s*(?P<var_base>[^\[]+)/i', $this->getName(),$matches);
         if (! $has_base || !isset($matches['var_base']))
         {
             return;
@@ -35,8 +39,8 @@ class ToggleField extends Input{
         }
         
         // find sub-arrays in the name
-        $has_subarray = preg_match_all('/\[(?P<index>[^\]]*)\]/i', $this->getName(),$subarrays);
-        if (!$has_subarray || !isset($subarrays['index']) || count ($subarrays['index']) < 1)
+        $has_subarray = \preg_match_all('/\[(?P<index>[^\]]*)\]/i', $this->getName(),$subarrays);
+        if (!$has_subarray || !isset($subarrays['index']) || \count ($subarrays['index']) < 1)
         {
             // probably the name is just malformated
             return;

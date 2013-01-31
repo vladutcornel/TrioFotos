@@ -1,6 +1,7 @@
 <?php
 
-require_once TRIO_DIR . '/whereis.php';
+namespace trio\html;
+require_once \TRIO_DIR.'/framework.php';
 
 /**
  * A pseudo form element to hold Checkbox and Radio Groups.
@@ -62,7 +63,7 @@ abstract class CheckableFormElements extends FormElement {
         /* @var $input Input */
         foreach ($this->inputs as $input)
         {
-            if (in_array($input->getValue(), (array)$new_value))
+            if (\in_array($input->getValue(), (array)$new_value))
             {
                 $input->setAttribute('checked', 'checked');
                 if (self::RADIO == $this->type) break;
